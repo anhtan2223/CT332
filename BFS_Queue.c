@@ -39,7 +39,7 @@ int enQueue(Queue *Q,Node* node)
     if(!isFull(*Q))
     {
         Q->rear++;
-        // if(Q->front == -1 ) Q->front++;
+        if(Q->front == -1 ) Q->front++;
         Q->List[Q->rear] = node;
         return 1;
     }
@@ -56,13 +56,13 @@ int deQueue(Queue *Q)
     printf("Queue Empty Cannot Delele any Node");
     return 0;
 }
-Node* Front(Queue Q)
+Node* front(Queue Q)
 {
-    return Q.front ;
+    return Q.List[Q.front] ;
 }
-int SizeQueue(Queue Q)
+int sizeQueue(Queue Q)
 {
-    return isEmpty(Q)?0:Q.rear-Q.front;
+    return isEmpty(Q)?0:Q.rear - Q.front +1;
 }
 int pourX(State now,State *result)
 {
@@ -146,14 +146,29 @@ int main()
     start.x = 1;
     start.y = 2;
     show(start);
-    for(int i=0;i<6;i++)
-    {
-        if(call_operator(start,&result,i))
-        {
-            printf("Action %-15s : Sucsess \n",action[i]);
-            show(result);
-        }
-        else printf("Action %-15s : Fail\n",action[i]);
-    }
+    // for(int i=0;i<6;i++)
+    // {
+    //     if(call_operator(start,&result,i))
+    //     {
+    //         printf("Action %-15s : Sucsess \n",action[i]);
+    //         show(result);
+    //     }
+    //     else printf("Action %-15s : Fail\n",action[i]);
+    // }
+
+    Node* test = (Node*)malloc(sizeof(Node));
+    test->state = start;
+    test->option = -1;
+    test->Parent = NULL;
+    Queue Q;
+    makeNullQueue(&Q);
+    // enQueue(&Q,test);
+    enQueue(&Q,test);
+    // enQueue(&Q,test);
+    // deQueue(&Q);
+    // enQueue(&Q,test);
+    // enQueue(&Q,test);
+    printf("Test : %d\n",sizeQueue(Q));
+    show(front(Q)->state);
     return 0;
 }
