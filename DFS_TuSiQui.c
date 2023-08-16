@@ -1,16 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define maxX 9
-#define maxY 4
-#define empty 0
-#define goal 6
-#define length 50
 
+#define length 50
 typedef struct{
-    int x;
-    int y;
+	int tusi; 	//Bo A
+	int qui;	//Bo B
+	char vitri;	//Co 2 bo A va bo B
 }State;
+
 
 typedef struct Node{
     int option;
@@ -63,93 +61,89 @@ Node* top(Stack *S)
 }
 //MakeNull Empty Full Pop Top Push
 
-int max(int a,int b)
-{
-    return a>b?a:b;
-}
-int min(int a,int b)
-{
-    return a<b?a:b;
-}
 
-int pourX(State now,State *result)
+//Operator
+int chuyen1TuSi(State now , State *result)
 {
-    if(now.x < maxX)
-    {
-        result->x = maxX;
-        result->y = now.y;
-        return 1;
-    }
-    return 0;
+	if(now.tusi != 0)
+	{
+		int i =  now.vitri=='A'?-1:1;
+		result->tusi = now.tusi + i ;
+		result->qui  = now.qui;
+		result->vitri =  now.vitri=='A'?'B':'A';
+		return 1;	
+	}
+	return 0;
 }
-
-int pourY(State now , State *result)
+int chuyen1Qui(State now , State *result)
 {
-    if(now.y < maxY)
-    {
-        result->x = now.x;
-        result->y = maxY;
-        return 1;
-    }
-    return 0;
+	if(now.qui != 0)
+	{
+		int i =  now.vitri=='A'?-1:1;
+		result->tusi = now.tusi;
+		result->qui  = now.qui+i;
+		result->vitri =  now.vitri=='A'?'B':'A';
+		return 1;	
+	}
+	return 0;
 }
-int pourXY(State now,State *result)
+int chuyen2TuSi(State now,State *result)
 {
-    if(now.x > 0 && now.y < maxY)
-    {
-        result->x = max(now.x - (maxY-now.y) , empty);
-        result->y = min(maxY, now.y+now.x);
-        return 1;
-    }
-    return 0;
+	if(now.tusi > 1)
+	{
+		int i =  now.vitri=='A'?-1:1;
+		result->tusi = now.tusi + i*2 ;
+		result->qui  = now.qui;
+		result->vitri =  now.vitri=='A'?'B':'A';
+		return 1;
+	}
+	return 0;
 }
-int pourYX(State now,State *result)
+int chuyen2Qui(State now,State *result)
 {
-    if(now.x < maxX && now.y >0)
-    {
-        result->x = min(maxX,now.x+now.y);
-        result->y = max(now.y-(maxX -  now.x),empty);
-        return 1;
-    }
-    return 0;
+	if(now.qui > 1)
+	{
+		int i =  now.vitri=='A'?-1:1;
+		result->tusi = now.tusi ;
+		result->qui  = now.qui + i*2;
+		result->vitri =  now.vitri=='A'?'B':'A';
+		return 1;
+	}
+	return 0;
 }
-int nullX(State now,State *result)
+int chuyenTuSiQui(State now,State *result)
 {
-    if(now.x > 0)
-    {
-        result->x= empty;
-        result->y= now.y;
-        return 1;
-    }
-    return 0;
+	if(now.qui != 0 && now.tusi!=0)
+	{
+		int i =  now.vitri=='A'?-1:1;
+		result->tusi = now.tusi + i ;
+		result->qui  = now.qui  + i ;
+		result->vitri =  now.vitri=='A'?'B':'A';
+		return 1;
+	}
+	return 0;
 }
-int nullY(State now , State *result)
+int show(State now)
 {
-    if(now.y > 0)
-    {
-        result->x = now.x;
-        result->y = empty;
-        return 1;
-    }
-    return 0;
+	printf("State (TuSi,Qui) = (%d,%d) - thuyen dang o %c\n",now.tusi,now.qui,now.vitri);
 }
-int call_operators(State now,State *result ,int option)
+int call_operators(State now,State *result,int option)
 {
-    switch (option)
-    {
-    case 0 :return pourX(now,result);
-    case 1 :return pourY(now,result);
-    case 2 :return pourXY(now,result);
-    case 3 :return pourYX(now,result);
-    case 4 :return nullX(now,result);
-    case 5 :return nullY(now,result);
-    default:printf("Error calls operator");
-    return 0;
-    }
+	switch(option)
+	{
+		case 0 : return chuyen1TuSi(now,result);
+		case 1 : return chuyen1Qui(now,result);
+		case 2 : return chuyen2TuSi(now,result);
+		case 3 : return chuyen2Qui(now,result);
+		case 4 : return chuyenTuSiQui(now,result);
+		default : printf("Option Fail !\n"); return 0;
+	}
 }
+char *action[] = {"Chuyen 1 Tu Si","Chuyen 1 Qui","Chuyen 2 Tu Si"
+				 ,"Chuyen 2 Qui" , "Chuyen 1 Tu Si va 1 Qui"};
 int isSame(State A,State B)
 {
-    return (A.x == B.x) && (A.y == B.y);
+    return (A.tusi == B.tusi) && (A.qui == B.qui);
 }
 int findState(State state,Stack stack)
 {
@@ -161,14 +155,7 @@ int findState(State state,Stack stack)
     }
     return 0;
 }
-void Show(State arg)
-{
-    printf(" (x,y) = (%d,%d) \n",arg.x,arg.y);
-}
-const char* action[] = {"Pour Water Full X","Pour Water Full Y"
-                        ,"Pour Water From X to Y","Pour Water From Y to X"
-                        ,"Pour Water Empty X","Pour Water Empty Y"};
-Node* DFS_pourWater(Node* Root)
+Node* DFS(Node* Root)
 {
     Stack Open,Close;
     makenullStack(&Open);
@@ -178,14 +165,14 @@ Node* DFS_pourWater(Node* Root)
     while(!isEmpty(Open))
     {
         Node* X = top(&Open);
-        if(X->state.x == goal) return X;
+        if(X->state.tusi == 0 && X->state.qui == 0) return X;
         else
         {
             push(X,&Close);
             pop(&Open);
             int i;
             State temp;
-            for(i=0;i<6;i++)
+            for(i=0;i<5;i++)
             {
                 if(call_operators(X->state,&temp,i) && !findState(temp,Open) && !findState(temp,Close) )
                 {
@@ -221,23 +208,33 @@ void printResult(Stack Sr)
     while(!isEmpty(Sr))
     {
         printf("Action %d : %s \n",it-Sr.top,it-Sr.top==0?"First State":action[top(&Sr)->option]);
-        Show(top(&Sr)->state);
+        show(top(&Sr)->state);
         pop(&Sr);
     }
 }
 int main()
 {
     State start,temp;
-    start.x = 0;
-    start.y = 0;
+    start.qui = 3;
+    start.tusi = 3;
     Node* Root = (Node*)malloc(sizeof(Node));
     Root->state = start;
     Root->Parent = NULL;
     Root->option = -1;
     
-    Node* result = DFS_pourWater(Root);
-    Stack Sr = getResult(result);
-    printResult(Sr);
+//    Node* result = DFS(Root);
+//    Stack Sr = getResult(result);
+//    printResult(Sr);
+	int i;
+	for(i=0;i<5;i++)
+	{
+		if(call_operators(start,&start,i))
+		{
+			printf("Action : %s Succes \n",action[i]);
+			show(start);
+		}
+		else printf("Action : %s Fail \n",action[i]);
+	}
     
     return 0;
 }

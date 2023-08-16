@@ -5,7 +5,7 @@
 #define fullY 4
 #define goal  6
 #define empty 0
-#define length 30
+#define length 50
 
 typedef struct{
     int x;
@@ -28,18 +28,20 @@ void makeNullQueue(Queue *Q)
 }
 int isEmpty(Queue Q)
 {
-    return (Q.front > Q.rear) || (Q.front == -1) ;
+    return (Q.front == -1) ;
 }
 int isFull(Queue Q)
 {
-    return Q.rear == length-1;
+    // return Q.rear == length -1 ;
+    return (Q.rear - Q.front +1)%length == 0;
+    // Problem here
 }
 int enQueue(Queue *Q,Node* node)
 {
     if(!isFull(*Q))
     {
-        Q->rear++;
         if(Q->front == -1 ) Q->front++;
+        Q->rear = (Q->rear+1)%length;
         Q->List[Q->rear] = node;
         return 1;
     }
@@ -50,7 +52,8 @@ int deQueue(Queue *Q)
 {
     if(!isEmpty(*Q))
     {
-        Q->front++;
+        if(Q->front == Q->rear) makeNullQueue(Q);
+        else Q->front = (Q->front+1)%length;
         return 1;
     }
     printf("Queue Empty Cannot Delele any Node");
@@ -126,49 +129,96 @@ int call_operator(State now,State *result,int option)
     {
         case 0: return pourX(now,result);
         case 1: return pourY(now,result);
-        case 2: return emptyX(now,result);
-        case 3: return emptyY(now,result);
-        case 4: return pourXY(now,result);
-        case 5: return pourYX(now,result);
+        case 2: return pourXY(now,result);
+        case 3: return pourYX(now,result);
+        case 4: return emptyX(now,result);
+        case 5: return emptyY(now,result);
+        
         default: printf("Option Choose not Available!");
         return 0;
     }
 }
-char* action[] = {"Pour full X","Pour full Y","Empty X","Empty Y","Pour X to Y","Pour Y to X"};
-
+const char* action[] = {"Pour Water Full X","Pour Water Full Y"
+                        ,"Pour Water From X to Y","Pour Water From Y to X"
+                        ,"Pour Water Empty X","Pour Water Empty Y"};
 void show(State S)
 {
-    printf("Sate (X,Y) = (%d,%d) \n",S.x,S.y);
+    printf("State (X,Y) = (%d,%d) \n",S.x,S.y);
+}
+int isSame(State A,State B)
+{
+	return (A.x == B.x) && (A.y == B.y);
+}
+int findState(State S,Queue Q)
+{
+	if(isEmpty(Q)) return 0;
+	int i;
+	for(i=Q.front;i<=Q.rear;i++)
+		if( isSame(S,Q.List[i]->state) ) return 1;
+	return 0;
+}
+Node* BFS_PourWater(Node* Root)
+{
+	Queue Open , Close;
+    makeNullQueue(&Open);
+    makeNullQueue(&Close);
+    
+    enQueue(&Open,Root);
+    
+    while(!isEmpty(Open))
+    {
+		Node* X = front(Open);
+        deQueue(&Open);
+        enQueue(&Close,X);
+		if(X->state.x == goal) return X;
+    	else
+    	{
+	    	int i;
+			State result;
+    		for(i=0;i<6;i++)
+    			if(call_operator(X->state,&result,i) && !findState(result,Open) && !findState(result,Close))
+    			{
+    				Node* child   = (Node*)malloc(sizeof(Node));
+    				child->state  = result;
+    				child->Parent = X;
+    				child->option = i;
+    				enQueue(&Open,child);
+//    				show(result);
+				}
+		}
+	}
+    return NULL;
+}
+void printResultQ(Node* result)
+{
+	 int i=0;
+	Queue Qresult ;
+	makeNullQueue(&Qresult);
+    while(result != NULL)
+    {
+//    	show(result->state);
+		enQueue(&Qresult,result);
+    	result = result->Parent;
+	}
+	
+	for(i = Qresult.rear ; i >= Qresult.front ; i--)
+	{	
+		printf("Action %d : %s \n",Qresult.rear-i,Qresult.rear-i==0?"First State":action[Qresult.List[i]->option]);
+		show(Qresult.List[i]->state);
+	}	
 }
 int main()
 {
-    State start,result;
-    start.x = 1;
-    start.y = 2;
-    show(start);
-    // for(int i=0;i<6;i++)
-    // {
-    //     if(call_operator(start,&result,i))
-    //     {
-    //         printf("Action %-15s : Sucsess \n",action[i]);
-    //         show(result);
-    //     }
-    //     else printf("Action %-15s : Fail\n",action[i]);
-    // }
+    State start;
+    start.x = 0;
+    start.y = 0;
 
-    Node* test = (Node*)malloc(sizeof(Node));
-    test->state = start;
-    test->option = -1;
-    test->Parent = NULL;
-    Queue Q;
-    makeNullQueue(&Q);
-    // enQueue(&Q,test);
-    enQueue(&Q,test);
-    // enQueue(&Q,test);
-    // deQueue(&Q);
-    // enQueue(&Q,test);
-    // enQueue(&Q,test);
-    printf("Test : %d\n",sizeQueue(Q));
-    show(front(Q)->state);
+    Node* root = (Node*)malloc(sizeof(Node));
+    root->state = start;
+    root->option = -1;
+    root->Parent = NULL;
+    
+    Node* result = BFS_PourWater(root);
+    printResultQ(result);
     return 0;
 }

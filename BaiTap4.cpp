@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stack>
 
+using namespace std;
 #define maxX 9
 #define maxY 4
-#define empty 0
+#define Empty 0
 #define goal 6
 #define length 50
 
@@ -18,49 +20,6 @@ typedef struct Node{
     State state;
 }Node;
 
-typedef struct {
-    int top; //top meaning location where pop item
-    Node* List[length];
-}Stack;
-
-void makenullStack(Stack *S)
-{
-    S->top = -1;
-}
-int isEmpty(Stack S)
-{
-    return S.top == -1;
-}
-int isFull(Stack S)
-{
-    return S.top == length-1;
-}
-void push(Node* N,Stack* S)
-{
-    if(!isFull(*S))
-    {
-        S->top++;
-        S->List[S->top] = N;
-    }
-        
-    else printf("Error Stack Full \n");
-}
-
-void pop(Stack* S)
-{
-    if(!isEmpty(*S))
-        S->top--;
-    else printf("Stack Empty");
-}
-
-Node* top(Stack *S)
-{
-    if(!isEmpty(*S))
-    {
-        return S->List[S->top];
-    }
-    return NULL;
-}
 //MakeNull Empty Full Pop Top Push
 
 int max(int a,int b)
@@ -97,7 +56,7 @@ int pourXY(State now,State *result)
 {
     if(now.x > 0 && now.y < maxY)
     {
-        result->x = max(now.x - (maxY-now.y) , empty);
+        result->x = max(now.x - (maxY-now.y) , Empty);
         result->y = min(maxY, now.y+now.x);
         return 1;
     }
@@ -108,7 +67,7 @@ int pourYX(State now,State *result)
     if(now.x < maxX && now.y >0)
     {
         result->x = min(maxX,now.x+now.y);
-        result->y = max(now.y-(maxX -  now.x),empty);
+        result->y = max(now.y-(maxX -  now.x),Empty);
         return 1;
     }
     return 0;
@@ -117,7 +76,7 @@ int nullX(State now,State *result)
 {
     if(now.x > 0)
     {
-        result->x= empty;
+        result->x= Empty;
         result->y= now.y;
         return 1;
     }
@@ -128,7 +87,7 @@ int nullY(State now , State *result)
     if(now.y > 0)
     {
         result->x = now.x;
-        result->y = empty;
+        result->y = Empty;
         return 1;
     }
     return 0;
@@ -151,13 +110,13 @@ int isSame(State A,State B)
 {
     return (A.x == B.x) && (A.y == B.y);
 }
-int findState(State state,Stack stack)
+int findState(State state,stack<Node*> S)
 {
-    if(isEmpty(stack)) return 0;
+    if(S.empty()) return 0;
     int i;
-    for(i=0;i<=stack.top;i++)
+    for(i=0;i<=stack.size();i++)
     {
-        if(isSame(state,stack.List[i]->state)) return 1;
+        if(isSame(state,S.List[i]->state)) return 1;
     }
     return 0;
 }
@@ -170,7 +129,7 @@ const char* action[] = {"Pour Water Full X","Pour Water Full Y"
                         ,"Pour Water Empty X","Pour Water Empty Y"};
 Node* DFS_pourWater(Node* Root)
 {
-    Stack Open,Close;
+    stack<Node*> Open,Close;
     makenullStack(&Open);
     makenullStack(&Close);
     push(Root,&Open);
@@ -201,7 +160,7 @@ Node* DFS_pourWater(Node* Root)
     }
     return NULL;
 }
-Stack getResult(Node* result)
+stack<Node*> getResult(Node* result)
 {
     Stack S;
     Node* temp = result;
@@ -236,7 +195,7 @@ int main()
     Root->option = -1;
     
     Node* result = DFS_pourWater(Root);
-    Stack Sr = getResult(result);
+    stack<Node*> Sr = getResult(result);
     printResult(Sr);
     
     return 0;
