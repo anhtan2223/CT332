@@ -106,6 +106,13 @@ int call_operators(State now,State *result ,int option)
     return 0;
     }
 }
+void Show(State arg)
+{
+    printf(" (x,y) = (%d,%d) \n",arg.x,arg.y);
+}
+const char* action[] = {"Pour Water Full X","Pour Water Full Y"
+                        ,"Pour Water From X to Y","Pour Water From Y to X"
+                        ,"Pour Water Empty X","Pour Water Empty Y"};
 int isSame(State A,State B)
 {
     return (A.x == B.x) && (A.y == B.y);
@@ -121,13 +128,6 @@ int findState(State state,stack<Node*> S)
     }
     return 0;
 }
-void Show(State arg)
-{
-    printf(" (x,y) = (%d,%d) \n",arg.x,arg.y);
-}
-const char* action[] = {"Pour Water Full X","Pour Water Full Y"
-                        ,"Pour Water From X to Y","Pour Water From Y to X"
-                        ,"Pour Water Empty X","Pour Water Empty Y"};
 Node* DFS_pourWater(Node* Root)
 {
     stack<Node*> Open,Close;
