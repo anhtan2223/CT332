@@ -114,9 +114,10 @@ int findState(State state,stack<Node*> S)
 {
     if(S.empty()) return 0;
     int i;
-    for(i=0;i<=stack.size();i++)
+    while(!S.empty())
     {
-        if(isSame(state,S.List[i]->state)) return 1;
+        if(isSame(state,S.top()->state)) return 1;
+        S.pop();
     }
     return 0;
 }
@@ -130,18 +131,16 @@ const char* action[] = {"Pour Water Full X","Pour Water Full Y"
 Node* DFS_pourWater(Node* Root)
 {
     stack<Node*> Open,Close;
-    makenullStack(&Open);
-    makenullStack(&Close);
-    push(Root,&Open);
+    Open.push(Root);
     
-    while(!isEmpty(Open))
+    while(!Open.empty())
     {
-        Node* X = top(&Open);
+        Node* X = Open.top();
         if(X->state.x == goal) return X;
         else
         {
-            push(X,&Close);
-            pop(&Open);
+            Close.push(X);
+            Open.pop();
             int i;
             State temp;
             for(i=0;i<6;i++)
@@ -152,7 +151,7 @@ Node* DFS_pourWater(Node* Root)
                     T->Parent = X;
                     T->option = i;
                     T->state  = temp;
-                    push(T,&Open);
+                    Open.push(T);
                     // Show(temp);
                 }
             }
@@ -162,26 +161,26 @@ Node* DFS_pourWater(Node* Root)
 }
 stack<Node*> getResult(Node* result)
 {
-    Stack S;
+    stack<Node*> S;
     Node* temp = result;
-    makenullStack(&S);
     while(temp != NULL)
     {
-        push(temp,&S);
+        S.push(temp);
         temp = temp->Parent;
     }
     return S;
 }
-void printResult(Stack Sr)
+void printResult(stack<Node*> Sr)
 {
     // printf("Action 0 : Frist State \n");
     // Node* temp = top(&S);
-    int it = Sr.top;
-    while(!isEmpty(Sr))
+    int it = 0;
+    while(!Sr.empty())
     {
-        printf("Action %d : %s \n",it-Sr.top,it-Sr.top==0?"First State":action[top(&Sr)->option]);
-        Show(top(&Sr)->state);
-        pop(&Sr);
+        printf("Action %d : %s \n",it,it==0?"First State":action[Sr.top()->option]);
+        Show(Sr.top()->state);
+        Sr.pop();
+        it++;
     }
 }
 int main()
