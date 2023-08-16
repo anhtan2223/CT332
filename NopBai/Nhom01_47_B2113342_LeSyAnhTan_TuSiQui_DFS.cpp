@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <queue>
 #include <stack>
-using namespace std;
 
 using namespace std;
 #define length 50
@@ -114,25 +112,24 @@ int isSame(State A,State B)
 {
     return (A.tusi == B.tusi) && (A.qui == B.qui) && (A.vitri == B.vitri);
 }
-int findState(State state,queue<Node*> S)
+int findState(State state,stack<Node*> S)
 {
     if(S.empty()) return 0;
     int i;
     while(!S.empty())
     {
-        if(isSame(state,S.front()->state)) return 1;
+        if(isSame(state,S.top()->state)) return 1;
         S.pop();
     }
     return 0;
 }
-Node* BFS_PourWater(Node* Root)
+Node* DFS_pourWater(Node* Root)
 {
-	queue<Node*> Open , Close;
+    stack<Node*> Open,Close;
     Open.push(Root);
-    
     while(!Open.empty())
     {
-        Node* X = Open.front();
+        Node* X = Open.top();
         if(checkGoal(X->state)) return X;
         else
         {
@@ -142,17 +139,21 @@ Node* BFS_PourWater(Node* Root)
             State temp;
             for(i=0;i<5;i++)
             {
-                if(call_operator(X->state,&temp,i) && !findState(temp,Open) && !findState(temp,Close) && isLive(temp))
+                if(call_operator(X->state,&temp,i))
                 {
+					if(findState(temp,Open) || findState(temp,Close) || !isLive(temp)) continue;
                     Node* T = (Node*)malloc(sizeof(Node));
                     T->Parent = X;
                     T->option = i;
                     T->state  = temp;
                     Open.push(T);
+					// printf("sizeOpen: %lu\n",Open.size());
+					// printf("sizeClose: %lu\n",Close.size());
                 }
             }
         }
     }
+    return NULL;
 }
 stack<Node*> getResult(Node* result)
 {
@@ -182,14 +183,13 @@ int main()
 	start.tusi  = 3;
 	start.qui   = 3;
 	start.vitri = 'A';
-	State now = start;
 	int i;
 	Node* Root = (Node*)malloc(sizeof(Node));
     Root->state = start;
     Root->Parent = NULL;
     Root->option = -1;
     
-    Node* result = BFS_PourWater(Root);
+    Node* result = DFS_pourWater(Root);
     stack<Node*> Sr = getResult(result);
     printResult(Sr);	
 }
